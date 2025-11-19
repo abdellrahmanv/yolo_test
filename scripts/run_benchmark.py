@@ -1,5 +1,5 @@
 from ultralytics import YOLO
-import time, csv, cv2
+import time, csv, cv2, os
 from system_monitor import get_system_stats
 from camera_stream import get_camera_stream
 
@@ -13,6 +13,11 @@ MODELS = {
 
 def run_single_test(model_name, model_path):
     print(f"\n=== Running test for {model_name} ===\n")
+    
+    # Check if model exists
+    if not os.path.exists(model_path):
+        print(f"❌ Model not found: {model_path}")
+        print(f"Downloading {model_name}...")
     
     model = YOLO(model_path)
     cap = get_camera_stream()
