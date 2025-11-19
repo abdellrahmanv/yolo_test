@@ -12,8 +12,8 @@ TEST_DURATION = 30  # seconds
 IMG_SIZE = 320
 
 MODELS = {
-    "yolo8n": "models/yolov8n.pt",
-    "yolo11n": "models/yolov11n.pt"
+    "yolo8n": os.path.join(project_root, "models/yolov8n.pt"),
+    "yolo11n": os.path.join(project_root, "models/yolov11n.pt")
 }
 
 def run_single_test(model_name, model_path):
