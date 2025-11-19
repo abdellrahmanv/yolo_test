@@ -1,0 +1,33 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+
+# YOLO Models (large files)
+models/*.pt
+models/*.onnx
+models/*.engine
+
+# Logs
+logs/*.csv
+logs/detailed/*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+*.ipynb_checkpoints
+
+# Keep directory structure
+!logs/.gitkeep
+!logs/detailed/.gitkeep
+!models/.gitkeep
