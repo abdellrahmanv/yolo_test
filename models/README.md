@@ -3,7 +3,7 @@
 Place your YOLO model files here:
 
 - `yolov8n.pt` - YOLOv8 Nano model
-- `yolov11n.pt` - YOLOv11 Nano model
+- `yolo11n.pt` - YOLO11 Nano model
 
 ## Download Models
 
@@ -13,7 +13,7 @@ You can download these models on your Raspberry Pi using:
 # YOLOv8n
 wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt
 
-# YOLOv11n
+# YOLO11n
 wget https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt
 ```
 
