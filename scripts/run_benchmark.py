@@ -1,7 +1,12 @@
 from ultralytics import YOLO
-import time, csv, cv2, os
+import time, csv, cv2, os, sys
 from system_monitor import get_system_stats
 from camera_stream import get_camera_stream
+
+# Change to project root directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+os.chdir(project_root)
 
 TEST_DURATION = 30  # seconds
 IMG_SIZE = 320
