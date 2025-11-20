@@ -18,6 +18,7 @@ MODELS = {
 }
 
 def run_single_test(model_name, model_path):
+    global SHOW_DISPLAY
     print(f"\n=== Running test for {model_name} ===\n")
     
     # Check if model exists
