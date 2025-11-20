@@ -29,8 +29,10 @@ def run_single_test(model_name, model_path):
     cap = get_camera_stream()
     
     # Check if camera opened successfully
-    if not cap.isOpened():
+    if cap is None or not cap.isOpened():
         print("❌ Error: Could not open camera!")
+        print("💡 Try enabling camera: sudo raspi-config → Interface Options → Camera")
+        print("💡 Or install required packages: sudo apt-get install libcamera-apps python3-libcamera")
         return
 
     log_path = f"logs/{model_name}.csv"
