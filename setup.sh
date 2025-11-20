@@ -12,9 +12,15 @@ fi
 echo "✅ Python 3 found: $(python3 --version)"
 echo ""
 
-# Create virtual environment
-echo "📦 Creating virtual environment..."
-python3 -m venv venv
+# Install picamera2 system package first (before venv)
+echo "📦 Installing picamera2 from system packages..."
+sudo apt update
+sudo apt install -y python3-picamera2 python3-libcamera python3-numpy
+echo ""
+
+# Create virtual environment with system packages access
+echo "📦 Creating virtual environment with system-site-packages..."
+python3 -m venv --system-site-packages venv
 
 if [ ! -d "venv" ]; then
     echo "❌ Failed to create virtual environment"
@@ -37,15 +43,9 @@ echo "📥 Installing dependencies..."
 echo "   - ultralytics (YOLO)"
 echo "   - opencv-python"
 echo "   - psutil"
-echo "   - picamera2 (Raspberry Pi camera support)"
 echo ""
 
-# Install picamera2 system package first (needs to be from apt)
-echo "📦 Installing picamera2 from system packages..."
-sudo apt update
-sudo apt install -y python3-picamera2 python3-libcamera
-
-pip install ultralytics opencv-python psutil numpy
+pip install ultralytics opencv-python psutil
 
 if [ $? -ne 0 ]; then
     echo "❌ Failed to install dependencies"
