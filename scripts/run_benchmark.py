@@ -32,23 +32,37 @@ def run_single_test(model_name, model_path):
 
     with open(log_path, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["fps", "cpu", "ram", "temp"])
+        writer.writerow(["fps", "cpu", "ram", "temp", "detections"])
 
         while time.time() - start_time < TEST_DURATION:
             ret, frame = cap.read()
             if not ret:
                 break
-
+            
             t0 = time.time()
-            results = model(frame, imgsz=IMG_SIZE)
+            results = model(frame, imgsz=IMG_SIZE, verbose=False)
             fps = 1 / (time.time() - t0)
 
+            # Draw bounding boxes and labels on frame
+            annotated_frame = results[0].plot()
+            
+            # Count detections
+            detections = len(results[0].boxes)
+            
+            # Display live view
+            cv2.imshow(f'{model_name} - YOLO Live Detection', annotated_frame)
+            
             cpu, ram, temp = get_system_stats()
-            writer.writerow([fps, cpu, ram, temp])
+            writer.writerow([fps, cpu, ram, temp, detections])
 
-            print(f"{model_name} | FPS: {fps:.2f} | CPU: {cpu}% | RAM: {ram}% | Temp: {temp}°C")
+            print(f"{model_name} | FPS: {fps:.2f} | CPU: {cpu}% | RAM: {ram}% | Temp: {temp}°C | Objects: {detections}")
+            
+            # Press 'q' to quit early
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
     cap.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
