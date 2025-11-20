@@ -57,17 +57,32 @@ pip install -r requirements.txt
 
 ## 🚀 Run Benchmark
 
-### Quick Run (with auto-activation)
+### Quick Run - Both Models (Sequential)
 
 ```bash
 ./run.sh
+```
+
+### Run Individual Models
+
+**YOLOv8n only:**
+```bash
+chmod +x run_yolo8n.sh
+./run_yolo8n.sh
+```
+
+**YOLO11n only:**
+```bash
+chmod +x run_yolo11n.sh
+./run_yolo11n.sh
 ```
 
 ### Manual Run
 
 ```bash
 source venv/bin/activate
-python3 scripts/run_benchmark.py
+python3 scripts/run_yolo8n.py   # For YOLOv8n
+python3 scripts/run_yolo11n.py  # For YOLO11n
 deactivate
 ```
 
@@ -77,11 +92,25 @@ This will:
 
 ## 📊 What Gets Logged
 
-Each CSV contains per-frame data:
-- **FPS** - Frames per second
-- **CPU** - CPU usage percentage
-- **RAM** - RAM usage percentage  
-- **Temp** - Raspberry Pi temperature (°C)
+### CSV Files (Raw Data)
+Each test generates a CSV in `logs/`:
+- `logs/yolo8n.csv` - YOLOv8n raw data
+- `logs/yolo11n.csv` - YOLO11n raw data
+
+**Columns:** frame, fps, cpu, ram, temp, detections
+
+### Markdown Reports (Visual Graphs)
+Each test auto-generates a markdown report with ASCII graphs:
+- `logs/yolo8n_report.md` - YOLOv8n visual report
+- `logs/yolo11n_report.md` - YOLO11n visual report
+
+**Includes:**
+- 📊 Summary statistics table
+- 📈 FPS graph over time
+- 🔥 CPU usage graph
+- 💾 RAM usage graph
+- 🌡️ Temperature graph
+- 🎯 Detections per frame graph
 
 ## 🔧 Configuration
 
