@@ -1,20 +1,34 @@
 """
 YOLO to TFLite Exporter
-Run this on your PC (not Raspberry Pi) to export models to TFLite INT8 format.
+Can run on PC or Raspberry Pi to export models to TFLite INT8 format.
 """
 
 from ultralytics import YOLO
 import os
+import sys
 
 print("="*60)
 print("🚀 YOLO to TFLite INT8 Exporter")
 print("="*60)
 print()
 
+# Detect where we are running
+if os.path.exists("/home/pi/yolo_test/models"):
+    # Running on Raspberry Pi
+    base_path = "/home/pi/yolo_test"
+    print("📍 Detected: Running on Raspberry Pi")
+else:
+    # Running on PC
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    print("📍 Detected: Running on PC")
+
+print(f"📁 Working directory: {base_path}")
+print()
+
 # Models to export
 models_to_export = [
-    ("models/yolov8n.pt", "YOLOv8n"),
-    ("models/yolo11n.pt", "YOLO11n")
+    (os.path.join(base_path, "models/yolov8n.pt"), "YOLOv8n"),
+    (os.path.join(base_path, "models/yolo11n.pt"), "YOLO11n")
 ]
 
 exported_files = []
@@ -62,20 +76,32 @@ if exported_files:
     print("\n" + "="*60)
     print("📝 NEXT STEPS:")
     print("="*60)
-    print("1. Copy the .tflite files to: tensorlite/models/")
-    print()
-    print("   Example:")
+    
+    # Create tensorlite/models directory if it doesn't exist
+    tflite_models_dir = os.path.join(base_path, "tensorlite/models")
+    os.makedirs(tflite_models_dir, exist_ok=True)
+    
+    # Copy files to tensorlite/models/
+    print("📦 Copying files to tensorlite/models/...")
     for export_path, model_name in exported_files:
         filename = os.path.basename(export_path)
-        print(f"   cp {export_path} tensorlite/models/{filename}")
+        dest_path = os.path.join(tflite_models_dir, filename)
+        try:
+            import shutil
+            shutil.copy2(export_path, dest_path)
+            print(f"   ✅ Copied: {filename}")
+        except Exception as e:
+            print(f"   ⚠️  Manual copy needed: {export_path} → {dest_path}")
+    
     print()
-    print("2. Transfer to Raspberry Pi:")
-    print("   scp tensorlite/models/*.tflite pi@raspberrypi:~/yolo_test/tensorlite/models/")
-    print()
-    print("3. On Raspberry Pi:")
-    print("   cd yolo_test/tensorlite")
-    print("   ./setup_tflite.sh")
-    print("   ./run_yolo8n_tflite.sh")
+    if os.path.exists("/home/pi"):
+        print("🎯 You're on Raspberry Pi! Run the benchmark:")
+        print("   cd tensorlite")
+        print("   ./setup_tflite.sh")
+        print("   ./run_yolo8n_tflite.sh")
+    else:
+        print("🎯 Transfer to Raspberry Pi:")
+        print("   scp -r tensorlite pi@raspberrypi:~/yolo_test/")
     print("="*60)
 else:
     print("❌ No models were exported successfully.")
