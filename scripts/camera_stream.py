@@ -1,54 +1,61 @@
 import cv2
 import subprocess
 import os
+import numpy as np
+from picamera2 import Picamera2
+from threading import Thread
+import time
+
+class RpiCameraStream:
+    """Camera stream using picamera2 for Raspberry Pi"""
+    def __init__(self, width=320, height=240):
+        self.width = width
+        self.height = height
+        self.camera = Picamera2()
+        
+        # Configure camera
+        config = self.camera.create_preview_configuration(
+            main={"size": (width, height), "format": "RGB888"}
+        )
+        self.camera.configure(config)
+        self.camera.start()
+        
+        # Warm up camera
+        time.sleep(2)
+        self.frame = None
+        self.stopped = False
+        
+    def read(self):
+        """Read frame from camera"""
+        if self.stopped:
+            return False, None
+        frame = self.camera.capture_array()
+        return True, frame
+    
+    def release(self):
+        """Release camera"""
+        self.stopped = True
+        self.camera.stop()
+        self.camera.close()
+    
+    def isOpened(self):
+        """Check if camera is opened"""
+        return not self.stopped
+    
+    def set(self, prop, value):
+        """Dummy set method for compatibility"""
+        pass
 
 def get_camera_stream(width=320, height=240):
     """
-    Get camera stream for Raspberry Pi.
-    Tries multiple methods: libcamera, picamera2, and standard OpenCV.
+    Get camera stream for Raspberry Pi using picamera2 (libcamera).
     """
-    # Method 1: Try libcamera with OpenCV (Raspberry Pi OS Bullseye+)
     try:
-        cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        
-        # Test if camera works
-        ret, frame = cap.read()
-        if ret:
-            print(f"✅ Camera initialized: {width}x{height} (V4L2)")
-            return cap
+        print("🎥 Initializing camera with picamera2 (libcamera)...")
+        cam = RpiCameraStream(width, height)
+        print(f"✅ Camera initialized: {width}x{height} (picamera2)")
+        return cam
     except Exception as e:
-        print(f"⚠️  V4L2 method failed: {e}")
-    
-    # Method 2: Try standard OpenCV
-    try:
-        cap = cv2.VideoCapture(0)
-        cap.set(3, width)
-        cap.set(4, height)
-        
-        # Test if camera works
-        ret, frame = cap.read()
-        if ret:
-            print(f"✅ Camera initialized: {width}x{height} (OpenCV default)")
-            return cap
-    except Exception as e:
-        print(f"⚠️  OpenCV default method failed: {e}")
-    
-    # Method 3: Try legacy camera index
-    try:
-        cap = cv2.VideoCapture('/dev/video0')
-        cap.set(3, width)
-        cap.set(4, height)
-        
-        ret, frame = cap.read()
-        if ret:
-            print(f"✅ Camera initialized: {width}x{height} (/dev/video0)")
-            return cap
-    except Exception as e:
-        print(f"⚠️  /dev/video0 method failed: {e}")
-    
-    print("❌ Failed to initialize camera with all methods")
-    print("💡 Make sure camera is enabled: sudo raspi-config → Interface Options → Camera")
-    return None
+        print(f"❌ picamera2 failed: {e}")
+        print("💡 Install picamera2: sudo apt install -y python3-picamera2")
+        return None

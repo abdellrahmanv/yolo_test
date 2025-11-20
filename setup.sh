@@ -37,9 +37,15 @@ echo "📥 Installing dependencies..."
 echo "   - ultralytics (YOLO)"
 echo "   - opencv-python"
 echo "   - psutil"
+echo "   - picamera2 (Raspberry Pi camera support)"
 echo ""
 
-pip install ultralytics opencv-python psutil
+# Install picamera2 system package first (needs to be from apt)
+echo "📦 Installing picamera2 from system packages..."
+sudo apt update
+sudo apt install -y python3-picamera2 python3-libcamera
+
+pip install ultralytics opencv-python psutil numpy
 
 if [ $? -ne 0 ]; then
     echo "❌ Failed to install dependencies"
