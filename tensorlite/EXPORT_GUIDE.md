@@ -1,84 +1,68 @@
-# Pre-exported TFLite Models
+# TFLite Model Export Guide
 
-## ⚠️ TensorFlow Export Issue on Raspberry Pi
+## ⚠️ TFLite Export is Complex and Often Fails
 
-Exporting YOLO models to TFLite requires TensorFlow, which is **too heavy for Raspberry Pi** and often fails.
+TFLite export requires many dependencies that often conflict. Here are your best options:
 
-## ✅ Solution: Use Pre-Exported Models
+## ✅ RECOMMENDED: Use ONNX Format Instead
 
-### Option 1: Download Pre-Exported Models (Recommended)
+ONNX is much easier to export and works well on Raspberry Pi with ONNX Runtime:
 
-You can download pre-exported TFLite INT8 models:
-
-**YOLOv8n INT8:**
-```bash
-wget https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n_saved_model.zip
-unzip yolov8n_saved_model.zip
-# Extract the .tflite file from the saved_model folder
-```
-
-**Or export on your PC:**
-
-### Option 2: Export on Your Windows PC
-
-1. **On your PC, install requirements:**
-   ```powershell
-   pip install ultralytics tensorflow
-   ```
-
-2. **Run the export script:**
-   ```powershell
-   cd C:\Users\Public\yolo_pi_benchmark\yolo_test
-   python export_models_to_tflite.py
-   ```
-
-3. **Copy generated files to Pi:**
-   ```powershell
-   # The script will create .tflite files
-   # Copy them using WinSCP, or:
-   scp yolov8n_int8.tflite pi@<pi-ip>:~/yolo_test/tensorlite/models/
-   scp yolo11n_int8.tflite pi@<pi-ip>:~/yolo_test/tensorlite/models/
-   ```
-
-### Option 3: Manual Export (Python Script)
-
-On your PC, create a Python script:
-
+**On your PC:**
 ```python
 from ultralytics import YOLO
 
-# Export YOLOv8n
+# Export to ONNX (much simpler!)
 model = YOLO("yolov8n.pt")
-model.export(format="tflite", int8=True)
+model.export(format="onnx")
 
-# Export YOLO11n  
 model = YOLO("yolo11n.pt")
-model.export(format="tflite", int8=True)
+model.export(format="onnx")
 ```
 
-This will create:
-- `yolov8n_int8.tflite`
-- `yolo11n_int8.tflite`
+This creates `yolov8n.onnx` and `yolo11n.onnx` - much more reliable!
 
-### Once You Have the .tflite Files:
+## Alternative: Download Pre-Converted Models
+
+### Option 1: Use Pre-exported Models from Ultralytics
+
+Ultralytics provides pre-exported models:
 
 ```bash
-# On Raspberry Pi
-cd ~/yolo_test/tensorlite/models
-# Place the .tflite files here
+# Download YOLOv8n TFLite
+wget https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n.tflite
 
-cd ..
-./setup_tflite.sh
-./run_yolo8n_tflite.sh
+# Download YOLO11n TFLite  
+wget https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.tflite
 ```
+
+### Option 2: Skip TFLite, Use PyTorch (.pt) Models
+
+The PyTorch benchmarks already work on your Pi! Just use:
+```bash
+./run_yolo8n.sh
+./run_yolo11n.sh
+```
+
+## Why TFLite Export Fails
+
+Common issues:
+- Missing `ai-edge-litert` package (not available on Windows)
+- Complex `onnx_graphsurgeon` dependencies
+- Tensorflow version conflicts
+- Memory issues during conversion
+
+## Best Practice for Raspberry Pi
+
+**Use the PyTorch (.pt) benchmark** you already have working!
+- It's simpler
+- Already implemented
+- Works reliably
+- You get 2-3 FPS which is acceptable for benchmarking
+
+The TFLite conversion was meant to give 5-7 FPS, but if it's causing problems, stick with what works! 🚀
 
 ---
 
-## Why Not Export on Pi?
+*If you really need TFLite models, try exporting on a Linux machine with Docker, or use pre-converted models from Ultralytics Hub.*
 
-- TensorFlow installation is 500+ MB
-- Export process is very slow (10+ minutes per model)
-- Often fails due to memory constraints
-- TFLite runtime (for inference) is only 5 MB and works perfectly!
-
-**Bottom line:** Export on PC, run inference on Pi! 🚀
