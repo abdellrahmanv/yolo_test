@@ -1,6 +1,7 @@
 """
 YOLO to TFLite Exporter
-Can run on PC or Raspberry Pi to export models to TFLite INT8 format.
+⚠️  IMPORTANT: Export should be done on a PC, not Raspberry Pi!
+TensorFlow is too heavy for Raspberry Pi.
 """
 
 from ultralytics import YOLO
@@ -13,14 +14,25 @@ print("="*60)
 print()
 
 # Detect where we are running
-if os.path.exists("/home/pi/yolo_test/models"):
-    # Running on Raspberry Pi
+if os.path.exists("/home/pi"):
+    print("⚠️  WARNING: You are running this on Raspberry Pi!")
+    print("   TensorFlow export is very slow and may fail on Pi.")
+    print()
+    print("💡 RECOMMENDED: Export on your PC instead:")
+    print("   1. Clone this repo on your PC")
+    print("   2. Run: python export_models_to_tflite.py")
+    print("   3. Copy the .tflite files to Pi")
+    print()
+    response = input("Continue anyway? (y/N): ")
+    if response.lower() != 'y':
+        print("Exiting...")
+        sys.exit(0)
     base_path = "/home/pi/yolo_test"
-    print("📍 Detected: Running on Raspberry Pi")
+    print("📍 Running on Raspberry Pi")
 else:
     # Running on PC
     base_path = os.path.dirname(os.path.abspath(__file__))
-    print("📍 Detected: Running on PC")
+    print("📍 Detected: Running on PC (recommended)")
 
 print(f"📁 Working directory: {base_path}")
 print()
