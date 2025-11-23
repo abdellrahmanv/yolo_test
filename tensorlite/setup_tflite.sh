@@ -41,6 +41,13 @@ echo ""
 
 # Check if models exist
 echo "🔍 Checking for TFLite models..."
+if [ -f "models/best_int8.tflite" ]; then
+    echo "✅ best_int8.tflite found (Custom trained model)"
+else
+    echo "⚠️  best_int8.tflite not found in models/"
+    echo "   This is your main custom model!"
+fi
+
 if [ ! -f "models/yolov8n_int8.tflite" ]; then
     echo "⚠️  yolov8n_int8.tflite not found in models/"
     echo "   Export it on your PC using: python3 export_to_tflite.py"
@@ -55,7 +62,8 @@ echo ""
 echo "✨ TFLite setup complete!"
 echo ""
 echo "To run the benchmark:"
-echo "  1. Make scripts executable: chmod +x run_yolo8n_tflite.sh run_yolo11n_tflite.sh"
-echo "  2. Run YOLOv8n: ./run_yolo8n_tflite.sh"
-echo "  3. Run YOLO11n: ./run_yolo11n_tflite.sh"
+echo "  1. Make scripts executable: chmod +x run_best_custom.sh run_yolo8n_tflite.sh run_yolo11n_tflite.sh"
+echo "  2. Run Custom Model (MAIN): ./run_best_custom.sh"
+echo "  3. Run YOLOv8n: ./run_yolo8n_tflite.sh"
+echo "  4. Run YOLO11n: ./run_yolo11n_tflite.sh"
 echo ""

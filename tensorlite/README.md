@@ -71,12 +71,12 @@ Transfer the `.tflite` files to `tensorlite/models/` directory.
 
 ```bash
 cd tensorlite
-chmod +x setup_tflite.sh run_yolo8n_tflite.sh run_yolo11n_tflite.sh
+chmod +x setup_tflite.sh run_best_custom.sh run_yolo8n_tflite.sh run_yolo11n_tflite.sh
 ./setup_tflite.sh
 ```
 
 This will:
-- Install TFLite runtime
+- Install TFLite runtime (lightweight, only 5 MB!)
 - Install OpenCV and dependencies
 - Optimize camera settings for MJPG format
 
