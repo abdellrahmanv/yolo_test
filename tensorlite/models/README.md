@@ -4,6 +4,18 @@ Place your TensorFlow Lite model files here:
 
 - `yolov8n_int8.tflite` - YOLOv8 Nano INT8 quantized
 - `yolo11n_int8.tflite` - YOLO11 Nano INT8 quantized
+- **`best_int8.tflite`** - **Custom trained model (MAIN MODEL)** ✅
+
+## Main Model: best_int8.tflite
+
+This is your custom-trained TFLite INT8 model. To use it:
+
+```bash
+cd tensorlite
+./run_best_custom.sh
+```
+
+This will run the benchmark with your custom model and generate reports.
 
 ## How to Generate TFLite Models
 

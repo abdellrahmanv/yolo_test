@@ -17,21 +17,24 @@ tensorlite/
 │
 ├── models/
 │     ├── yolov8n_int8.tflite
-│     └── yolo11n_int8.tflite
+│     ├── yolo11n_int8.tflite
+│     └── best_int8.tflite        ← Custom trained model (MAIN)
 │
 ├── scripts/
 │     ├── run_yolo8n_tflite.py
 │     ├── run_yolo11n_tflite.py
+│     ├── run_best_custom.py      ← Run custom model
 │     ├── camera_stream_tflite.py
 │     ├── system_monitor.py
 │     └── generate_report.py
 │
 ├── logs/
 │
-├── export_to_tflite.py       ← Run on PC to export models
-├── setup_tflite.sh           ← Setup script for Raspberry Pi
-├── run_yolo8n_tflite.sh      ← Run YOLOv8n benchmark
-└── run_yolo11n_tflite.sh     ← Run YOLO11n benchmark
+├── export_to_tflite.py
+├── setup_tflite.sh
+├── run_yolo8n_tflite.sh
+├── run_yolo11n_tflite.sh
+└── run_best_custom.sh            ← Run custom model benchmark
 ```
 
 ---
@@ -81,6 +84,11 @@ This will:
 
 ## 🚀 Run Benchmark
 
+### Custom Model (MAIN - Recommended)
+```bash
+./run_best_custom.sh
+```
+
 ### YOLOv8n TFLite
 ```bash
 ./run_yolo8n_tflite.sh
@@ -93,6 +101,7 @@ This will:
 
 ### Manual Run
 ```bash
+python3 scripts/run_best_custom.py  # For custom model
 python3 scripts/run_yolo8n_tflite.py
 python3 scripts/run_yolo11n_tflite.py
 ```
