@@ -1,10 +1,26 @@
 import cv2
 import numpy as np
 import time, csv, os, sys, signal
+
+# Try to import TFLite runtime
 try:
     import tflite_runtime.interpreter as tflite
+    print("✅ Using tflite_runtime")
 except ImportError:
-    import tensorflow.lite as tflite
+    try:
+        import tensorflow.lite as tflite
+        print("✅ Using tensorflow.lite")
+    except ImportError:
+        print("❌ ERROR: Neither tflite_runtime nor tensorflow is installed!")
+        print("\n📥 Please install TFLite runtime:")
+        print("   pip3 install --extra-index-url https://google-coral.github.io/py-repo/ tflite-runtime")
+        print("\nOr alternative:")
+        print("   pip3 install tflite-runtime")
+        print("\nOr run the setup script:")
+        print("   cd ~/yolo_test/tensorlite")
+        print("   chmod +x setup_tflite.sh")
+        print("   ./setup_tflite.sh")
+        sys.exit(1)
 
 from system_monitor import get_system_stats
 from camera_stream_tflite import get_camera_stream
