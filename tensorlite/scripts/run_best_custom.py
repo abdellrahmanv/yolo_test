@@ -2,25 +2,8 @@ import cv2
 import numpy as np
 import time, csv, os, sys, signal
 
-# Try to import TFLite runtime
-try:
-    import tflite_runtime.interpreter as tflite
-    print("✅ Using tflite_runtime")
-except ImportError:
-    try:
-        import tensorflow.lite as tflite
-        print("✅ Using tensorflow.lite")
-    except ImportError:
-        print("❌ ERROR: Neither tflite_runtime nor tensorflow is installed!")
-        print("\n📥 Please install TFLite runtime:")
-        print("   pip3 install --extra-index-url https://google-coral.github.io/py-repo/ tflite-runtime")
-        print("\nOr alternative:")
-        print("   pip3 install tflite-runtime")
-        print("\nOr run the setup script:")
-        print("   cd ~/yolo_test/tensorlite")
-        print("   chmod +x setup_tflite.sh")
-        print("   ./setup_tflite.sh")
-        sys.exit(1)
+# Use Ultralytics YOLO to load TFLite models (works with Python 3.13!)
+from ultralytics import YOLO
 
 from system_monitor import get_system_stats
 from camera_stream_tflite import get_camera_stream
@@ -61,16 +44,16 @@ def run_test():
         print(f"❌ Model not found: {MODEL_PATH}")
         return
     
-    # Load TFLite interpreter
-    print("📦 Loading TFLite model...")
-    interpreter = tflite.Interpreter(model_path=MODEL_PATH)
-    interpreter.allocate_tensors()
+    # Load TFLite model using Ultralytics YOLO
+    print("📦 Loading TFLite model with Ultralytics YOLO...")
+    print(f"   Model path: {MODEL_PATH}")
     
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-    print(f"✅ Model loaded: {MODEL_PATH}")
-    print(f"   Input shape: {input_details[0]['shape']}")
-    print(f"   Input dtype: {input_details[0]['dtype']}")
+    try:
+        model = YOLO(MODEL_PATH, task='detect')
+        print(f"✅ Model loaded successfully!")
+    except Exception as e:
+        print(f"❌ Failed to load model: {e}")
+        return
     
     cap = get_camera_stream(width=IMG_SIZE, height=IMG_SIZE)
     
@@ -95,28 +78,27 @@ def run_test():
             
             frame_count += 1
             
-            # Preprocess for TFLite
-            img = cv2.resize(frame, (IMG_SIZE, IMG_SIZE))
-            img = img.astype(np.uint8)
-            img = np.expand_dims(img, axis=0)
-            
-            # Run inference
+            # Run inference with Ultralytics YOLO
             t0 = time.time()
-            interpreter.set_tensor(input_details[0]['index'], img)
-            interpreter.invoke()
-            outputs = interpreter.get_tensor(output_details[0]['index'])
+            results = model(frame, imgsz=IMG_SIZE, verbose=False)
             inference_time = time.time() - t0
             fps = 1 / inference_time
+            
+            # Count detections
+            detections = len(results[0].boxes) if results[0].boxes is not None else 0
             
             cpu, ram, temp = get_system_stats()
             writer.writerow([frame_count, fps, cpu, ram, temp])
 
-            print(f"{MODEL_NAME} TFLite | Frame: {frame_count} | FPS: {fps:.2f} | CPU: {cpu}% | RAM: {ram}% | Temp: {temp}°C")
+            print(f"{MODEL_NAME} TFLite | Frame: {frame_count} | FPS: {fps:.2f} | Detections: {detections} | CPU: {cpu}% | RAM: {ram}% | Temp: {temp}°C")
+            
+            # Draw detections on frame
+            annotated_frame = results[0].plot() if detections > 0 else frame
             
             # Display live view if display is available
             if SHOW_DISPLAY:
                 try:
-                    cv2.imshow(f'{MODEL_NAME} - Custom TFLite Model', frame)
+                    cv2.imshow(f'{MODEL_NAME} - Custom TFLite Model', annotated_frame)
                     # Press 'q' to quit early
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         print("\n⏹️  Stopped by user (pressed 'q')")
