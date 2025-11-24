@@ -93,9 +93,9 @@ def run_test():
             
             frame_count += 1
             
-            img = cv2.resize(frame, (IMG_SIZE, IMG_SIZE))\n            img = img.astype(np.float32) / 255.0\n            img = np.expand_dims(img, axis=0)
-            
-            t0 = time.time()
+            img = cv2.resize(frame, (IMG_SIZE, IMG_SIZE))
+            img = img.astype(np.float32) / 255.0
+            img = np.expand_dims(img, axis=0)
             interpreter.set_tensor(input_details[0]['index'], img)
             interpreter.invoke()
             outputs = interpreter.get_tensor(output_details[0]['index'])
