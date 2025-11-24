@@ -140,8 +140,8 @@ def run_test():
     
     print(f"Loading TFLite model...")
     try:
-        # Use 4 threads for better performance on Raspberry Pi 4
-        interpreter = tflite.Interpreter(model_path=MODEL_PATH, num_threads=4)
+        # Use single thread - often faster on Pi 4 due to less overhead
+        interpreter = tflite.Interpreter(model_path=MODEL_PATH, num_threads=1)
         interpreter.allocate_tensors()
         
         input_details = interpreter.get_input_details()
