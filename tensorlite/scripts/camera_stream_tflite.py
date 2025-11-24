@@ -1,11 +1,15 @@
 ﻿import time
+import sys
 
 try:
     from picamera2 import Picamera2
     PICAMERA_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     PICAMERA_AVAILABLE = False
-    import cv2
+    IMPORT_ERROR = str(e)
+except Exception as e:
+    PICAMERA_AVAILABLE = False
+    IMPORT_ERROR = f"Other error: {e}"
 
 
 class CameraWrapper:
@@ -57,8 +61,15 @@ def get_camera_stream(width=320, height=240):
             return CameraWrapper(picam, is_picamera=True)
         except Exception as e:
             print(f"Failed to initialize picamera2: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     else:
-        print("ERROR: picamera2 not installed!")
-        print("Install it: sudo apt install python3-picamera2")
+        print(f"ERROR: picamera2 import failed!")
+        if 'IMPORT_ERROR' in globals():
+            print(f"Import error: {IMPORT_ERROR}")
+        print(f"\nTroubleshooting:")
+        print(f"  1. Install dependencies: pip install simplejpeg piexif av pillow")
+        print(f"  2. Or install system package: sudo apt install python3-picamera2")
+        print(f"  3. Recreate venv with --system-site-packages")
         return None
