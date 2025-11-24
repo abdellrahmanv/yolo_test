@@ -36,6 +36,44 @@ def signal_handler(sig, frame):
     print("\n\nTest interrupted by user (Ctrl+C)")
     interrupted = True
 
+def yolo_postprocess(output, conf_thresh=0.25, img_size=320):
+    """
+    Post-process YOLOv8 TFLite output to extract bounding boxes.
+    Output shape is typically (1, 5, N) where N is number of anchor boxes.
+    Each detection: [x_center, y_center, width, height, confidence]
+    """
+    boxes = []
+    scores = []
+    
+    # Handle different output shapes
+    if len(output.shape) == 3:
+        detections = output[0]  # (5, N) or (N, 5)
+        if detections.shape[0] == 5:
+            detections = detections.T  # Convert to (N, 5)
+    else:
+        detections = output
+    
+    for detection in detections:
+        if len(detection) >= 5:
+            x, y, w, h, conf = detection[:5]
+            if conf > conf_thresh:
+                # Convert from normalized to pixel coordinates
+                x_min = int((x - w/2) * img_size)
+                y_min = int((y - h/2) * img_size)
+                x_max = int((x + w/2) * img_size)
+                y_max = int((y + h/2) * img_size)
+                
+                # Clip to image boundaries
+                x_min = max(0, min(x_min, img_size))
+                y_min = max(0, min(y_min, img_size))
+                x_max = max(0, min(x_max, img_size))
+                y_max = max(0, min(y_max, img_size))
+                
+                boxes.append([x_min, y_min, x_max, y_max])
+                scores.append(float(conf))
+    
+    return boxes, scores
+
 def run_test():
     global SHOW_DISPLAY, interrupted, log_path
     
@@ -123,6 +161,18 @@ def run_test():
                 try:
                     # Display the correctly processed RGB image (converted back to BGR for OpenCV)
                     img_disp = cv2.cvtColor((img[0] * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
+                    
+                    # Post-process and draw bounding boxes
+                    boxes, scores = yolo_postprocess(outputs, conf_thresh=0.25, img_size=IMG_SIZE)
+                    for box, score in zip(boxes, scores):
+                        x1, y1, x2, y2 = box
+                        # Draw bounding box
+                        cv2.rectangle(img_disp, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        # Draw label with confidence
+                        label = f'Glasses {score:.2f}'
+                        cv2.putText(img_disp, label, (x1, y1 - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    
                     cv2.imshow(f'{MODEL_NAME} - Custom TFLite Model', img_disp)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         print("\nStopped by user (pressed 'q')")
