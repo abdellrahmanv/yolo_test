@@ -18,7 +18,7 @@ os.chdir(project_root)
 
 TEST_DURATION = 30
 IMG_SIZE = 320
-SHOW_DISPLAY = True
+SHOW_DISPLAY = False
 
 MODEL_NAME = "best_custom"
 MODEL_PATH = os.path.join(project_root, "models/best_int8.tflite")
@@ -145,4 +145,5 @@ if __name__ == "__main__":
         print(f"\nERROR during test: {e}")
         import traceback
         traceback.print_exc()
+
 
