@@ -14,6 +14,7 @@ except ImportError:
 
 from system_monitor import get_system_stats
 from generate_report import generate_markdown_report
+from camera_stream_tflite import get_camera_stream
 
 # Configuration
 IMG_SIZE = 320
@@ -139,17 +140,13 @@ def run_test():
         print(f"Failed to load model: {e}")
         return
     
-    # 2. Initialize camera with OpenCV directly
-    print(f"Initializing camera...")
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
+    # 2. Initialize camera with rpicam-vid (works with Pi Camera Module)
+    print(f"Initializing camera with rpicam-vid...")
+    cap = get_camera_stream(width=IMG_SIZE, height=IMG_SIZE)
+    
+    if cap is None or not cap.isOpened():
         print("Could not open camera!")
         return
-    
-    # Warm up camera - discard first 20 frames
-    print("Warming up camera (discarding first 20 frames)...")
-    for _ in range(20):
-        cap.read()
     
     print("Camera ready!\n")
     
