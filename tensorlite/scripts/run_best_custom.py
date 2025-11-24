@@ -92,6 +92,7 @@ def run_test():
                 break
             
             frame_count += 1
+            t0 = time.time()
             
             img = cv2.resize(frame, (IMG_SIZE, IMG_SIZE))
             img = img.astype(np.float32) / 255.0
@@ -144,3 +145,4 @@ if __name__ == "__main__":
         print(f"\nERROR during test: {e}")
         import traceback
         traceback.print_exc()
+
