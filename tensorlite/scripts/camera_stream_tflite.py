@@ -1,38 +1,64 @@
-﻿import cv2
-import numpy as np
-import time
+﻿import time
+
+try:
+    from picamera2 import Picamera2
+    PICAMERA_AVAILABLE = True
+except ImportError:
+    PICAMERA_AVAILABLE = False
+    import cv2
+
+
+class CameraWrapper:
+    def __init__(self, camera_obj, is_picamera=False):
+        self.camera = camera_obj
+        self.is_picamera = is_picamera
+        self.opened = True
+    
+    def read(self):
+        if self.is_picamera:
+            try:
+                frame = self.camera.capture_array()
+                return True, frame
+            except:
+                return False, None
+        else:
+            return self.camera.read()
+    
+    def release(self):
+        if self.is_picamera:
+            try:
+                self.camera.stop()
+            except:
+                pass
+        else:
+            self.camera.release()
+        self.opened = False
+    
+    def isOpened(self):
+        return self.opened
+
 
 def get_camera_stream(width=320, height=240):
     """
     Get camera stream optimized for TFLite on Raspberry Pi.
-    Uses MJPG format for better performance.
+    Uses picamera2 for Raspberry Pi Camera Module.
     """
-    try:
-        print("Initializing camera for TFLite...")
-        cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
-        cap.set(cv2.CAP_PROP_FPS, 30)
-        
-        # Test camera
-        ret, frame = cap.read()
-        if ret:
-            print(f"Camera initialized: {width}x{height} (MJPG)")
-            return cap
-    except Exception as e:
-        print(f"V4L2 MJPG failed: {e}")
-    
-    # Fallback to basic method
-    try:
-        cap = cv2.VideoCapture(0)
-        cap.set(3, width)
-        cap.set(4, height)
-        ret, frame = cap.read()
-        if ret:
-            print(f"Camera initialized: {width}x{height} (Basic)")
-            return cap
-    except Exception as e:
-        print(f"Camera initialization failed: {e}")
-    
-    return None
+    if PICAMERA_AVAILABLE:
+        try:
+            print("Initializing Raspberry Pi Camera...")
+            picam = Picamera2()
+            config = picam.create_preview_configuration(
+                main={"size": (width, height), "format": "RGB888"}
+            )
+            picam.configure(config)
+            picam.start()
+            time.sleep(2)
+            print(f"Camera initialized: {width}x{height}")
+            return CameraWrapper(picam, is_picamera=True)
+        except Exception as e:
+            print(f"Failed to initialize picamera2: {e}")
+            return None
+    else:
+        print("ERROR: picamera2 not installed!")
+        print("Install it: sudo apt install python3-picamera2")
+        return None
