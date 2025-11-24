@@ -1,12 +1,8 @@
 ﻿import os
 import sys
 
-# Check if --display flag is passed
-SHOW_DISPLAY = '--display' in sys.argv
-
-# Only set offscreen mode if display is not requested
-if not SHOW_DISPLAY:
-    os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+# Check if --no-display flag is passed to disable display
+SHOW_DISPLAY = '--no-display' not in sys.argv
 
 import cv2
 import numpy as np
@@ -48,9 +44,9 @@ def run_test():
     print(f"\n=== Running TFLite test for {MODEL_NAME} (Custom Model) ===\n")
     if SHOW_DISPLAY:
         print(f"Display enabled - Press 'q' in window or Ctrl+C to stop\n")
+        print(f"Tip: Use '--no-display' flag for headless operation\n")
     else:
         print(f"Running headless - Press Ctrl+C to stop and generate report\n")
-        print(f"Tip: Use '--display' flag to see camera feed (requires X11)\n")
     
     if not os.path.exists(MODEL_PATH):
         print(f"Model not found: {MODEL_PATH}")
