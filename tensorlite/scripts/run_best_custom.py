@@ -36,6 +36,39 @@ def signal_handler(sig, frame):
     print("\n\nTest interrupted by user (Ctrl+C)")
     interrupted = True
 
+def compute_ious(box1, boxes2):
+    """Compute IoU between one box and an array of boxes."""
+    x1 = np.maximum(box1[0], boxes2[:, 0])
+    y1 = np.maximum(box1[1], boxes2[:, 1])
+    x2 = np.minimum(box1[2], boxes2[:, 2])
+    y2 = np.minimum(box1[3], boxes2[:, 3])
+
+    inter_area = np.maximum(x2 - x1, 0) * np.maximum(y2 - y1, 0)
+    box1_area = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    boxes2_area = (boxes2[:, 2] - boxes2[:, 0]) * (boxes2[:, 3] - boxes2[:, 1])
+    union_area = box1_area + boxes2_area - inter_area
+    return inter_area / (union_area + 1e-6)
+
+def nms(boxes, scores, iou_threshold=0.4):
+    """Non-Maximum Suppression to filter overlapping boxes."""
+    if len(boxes) == 0:
+        return [], []
+    
+    boxes = np.array(boxes)
+    scores = np.array(scores)
+    idxs = np.argsort(scores)[::-1]
+    keep = []
+    
+    while len(idxs) > 0:
+        i = idxs[0]
+        keep.append(i)
+        if len(idxs) == 1:
+            break
+        ious = compute_ious(boxes[i], boxes[idxs[1:]])
+        idxs = idxs[1:][ious < iou_threshold]
+    
+    return boxes[keep].tolist(), scores[keep].tolist()
+
 def yolo_postprocess(output, conf_thresh=0.25, img_size=320):
     """
     Post-process YOLOv8 TFLite output to extract bounding boxes.
@@ -162,8 +195,14 @@ def run_test():
                     # Display the correctly processed RGB image (converted back to BGR for OpenCV)
                     img_disp = cv2.cvtColor((img[0] * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
                     
-                    # Post-process and draw bounding boxes
+                    # Post-process and draw bounding boxes with NMS
                     boxes, scores = yolo_postprocess(outputs, conf_thresh=0.25, img_size=IMG_SIZE)
+                    
+                    # Apply Non-Maximum Suppression to remove duplicate detections
+                    if boxes:
+                        boxes, scores = nms(boxes, scores, iou_threshold=0.5)
+                    
+                    # Draw filtered bounding boxes
                     for box, score in zip(boxes, scores):
                         x1, y1, x2, y2 = box
                         # Draw bounding box
