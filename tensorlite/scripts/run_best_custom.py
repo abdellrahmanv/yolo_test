@@ -121,7 +121,9 @@ def run_test():
             
             if SHOW_DISPLAY:
                 try:
-                    cv2.imshow(f'{MODEL_NAME} - Custom TFLite Model', frame)
+                    # Display the correctly processed RGB image (converted back to BGR for OpenCV)
+                    img_disp = cv2.cvtColor((img[0] * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
+                    cv2.imshow(f'{MODEL_NAME} - Custom TFLite Model', img_disp)
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         print("\nStopped by user (pressed 'q')")
                         interrupted = True
