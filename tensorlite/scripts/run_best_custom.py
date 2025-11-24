@@ -140,7 +140,8 @@ def run_test():
     
     print(f"Loading TFLite model...")
     try:
-        interpreter = tflite.Interpreter(model_path=MODEL_PATH)
+        # Use 4 threads for better performance on Raspberry Pi 4
+        interpreter = tflite.Interpreter(model_path=MODEL_PATH, num_threads=4)
         interpreter.allocate_tensors()
         
         input_details = interpreter.get_input_details()
@@ -196,7 +197,8 @@ def run_test():
                     img_disp = cv2.cvtColor((img[0] * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
                     
                     # Post-process and draw bounding boxes with NMS
-                    boxes, scores = yolo_postprocess(outputs, conf_thresh=0.25, img_size=IMG_SIZE)
+                    # Higher threshold (0.35) for faster inference and fewer boxes
+                    boxes, scores = yolo_postprocess(outputs, conf_thresh=0.35, img_size=IMG_SIZE)
                     
                     # Apply Non-Maximum Suppression to remove duplicate detections
                     if boxes:
