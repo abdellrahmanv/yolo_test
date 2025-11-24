@@ -1,6 +1,9 @@
-﻿import cv2
+﻿import os
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+
+import cv2
 import numpy as np
-import time, csv, os, sys, signal
+import time, csv, sys, signal
 
 try:
     import tflite_runtime.interpreter as tflite
