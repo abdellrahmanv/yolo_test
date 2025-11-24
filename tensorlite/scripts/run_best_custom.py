@@ -1,9 +1,16 @@
 ﻿import os
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+import sys
+
+# Check if --display flag is passed
+SHOW_DISPLAY = '--display' in sys.argv
+
+# Only set offscreen mode if display is not requested
+if not SHOW_DISPLAY:
+    os.environ['QT_QPA_PLATFORM'] = 'offscreen'
 
 import cv2
 import numpy as np
-import time, csv, sys, signal
+import time, csv, signal
 
 try:
     import tflite_runtime.interpreter as tflite
@@ -21,7 +28,6 @@ os.chdir(project_root)
 
 TEST_DURATION = 30
 IMG_SIZE = 320
-SHOW_DISPLAY = False
 
 MODEL_NAME = "best_custom"
 MODEL_PATH = os.path.join(project_root, "models/best_int8.tflite")
@@ -40,7 +46,11 @@ def run_test():
     signal.signal(signal.SIGINT, signal_handler)
     
     print(f"\n=== Running TFLite test for {MODEL_NAME} (Custom Model) ===\n")
-    print(f"Press Ctrl+C or 'q' to stop and generate report\n")
+    if SHOW_DISPLAY:
+        print(f"Display enabled - Press 'q' in window or Ctrl+C to stop\n")
+    else:
+        print(f"Running headless - Press Ctrl+C to stop and generate report\n")
+        print(f"Tip: Use '--display' flag to see camera feed (requires X11)\n")
     
     if not os.path.exists(MODEL_PATH):
         print(f"Model not found: {MODEL_PATH}")
